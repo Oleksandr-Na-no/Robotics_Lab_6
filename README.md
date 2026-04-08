@@ -1,38 +1,40 @@
-## How to Run Lab 5: Obstacle Avoidance
+## How to Run Lab 6: Motion Planning for Mobile Robots (Nav2)
 
 > Previous labs:
-> [Lab 3](https://www.google.com/search?q=https://github.com/Oleksandr-Na-no/Robotics_Lab_3-4) (required)
-> [Lab 4](https://www.google.com/search?q=https://github.com/Oleksandr-Na-no/Robotics_Lab_3-4)
+> [Lab 5](https://www.google.com/search?q=https://github.com/Oleksandr-Na-no/Robotics_Lab_5) 
 
----
+-----
 
-### 1. Prepare the Environment & Docker
+### 1\. Prepare the Environment & Docker
 
-Open the Docker container from the **[robotics_lpnu](https://github.com/RybOlya/robotics_lpnu/tree/master)** repository.
+Open the Docker container from the **[robotics\_lpnu](https://github.com/RybOlya/robotics_lpnu/tree/master)** repository.
+
+> ⚠️ **Note:** If this is your first time running Nav2, you must rebuild the Docker image to install the required packages.
 
 ```bash
 cd robotics_lpnu/
+./scripts/cmd build-docker
 ./scripts/cmd run
 ```
 
----
+-----
 
-### 2. Build Workspace (IMPORTANT)
+### 2\. Build Workspace
 
-> ⚠️ **Lab 5 depends on Lab 3**, so both packages must be built.
+Build the `lab6` package in your workspace:
 
 ```bash
 source /opt/ros/jazzy/setup.bash
 cd /opt/ws
-colcon build --packages-select lab3 lab5
+colcon build --packages-select lab6
 source install/setup.bash
 ```
 
----
+-----
 
-### 3. Setup Environment Before Run
+### 3\. Setup Environment Before Run
 
-Before launching anything, make sure environment is sourced:
+Before launching anything, make sure the environment is sourced:
 
 ```bash
 cd /opt/ws
@@ -40,44 +42,36 @@ source install/setup.bash
 source /opt/ros/jazzy/setup.bash
 ```
 
----
+-----
 
-### 4. Running Lab 5: Obstacle Avoidance
+### 4\. Running Lab 6: Nav2 Stack
 
-This lab implements obstacle avoidance using **LIDAR (`/scan`)** and **odometry (`/odom`)**.
+This launch file starts Gazebo with the `room_nav2` world (8x8m room with obstacles), spawns the TurtleBot3, and brings up the Nav2 stack (map server, AMCL localization, planner, controller, and behavior tree).
 
-**Launch simulation + node:**
-
-```bash
-ros2 launch lab5 obstacle_avoidance_bringup.launch.py
-```
-
----
-
-### 5. (Optional) Run with Custom Goal
-
-You can change the target point using parameters:
+**Launch simulation + Nav2:**
 
 ```bash
-ros2 run lab5 obstacle_avoidance --ros-args -p goal_x:=2.0 -p goal_y:=-2.0
+ros2 launch lab6 nav2_room_bringup.launch.py
 ```
 
----
+-----
 
-### 6. World Setup (Required)
+### 5\. Controlling the Robot via RViz
 
-Before running, you should **add obstacles** into the environment:
+Once RViz and Gazebo are open, follow these steps to navigate:
 
-Edit file:
+1.  **Set the Frame:** Ensure the **Fixed Frame** is set to `map`.
+2.  **Localize:** Click **2D Pose Estimate** in the top panel and set the robot's initial position and orientation to match what you see in Gazebo.
+3.  **Navigate:** Click **Nav2 Goal** and select a target destination on the map. The robot will plan a global path and dynamically avoid obstacles using the local costmap.
+
+-----
+
+### 6\. Tuning Nav2 Parameters (Configuration)
+
+The navigation parameters (velocities, costmap resolutions, inflations, goal tolerances) are heavily tuned for this run. If you need to adjust or experiment with them, edit the YAML file:
 
 ```bash
-lab3/turtlebot3/worlds/room.sdf
+lab6/config/nav2_params.yaml
 ```
 
-Add objects like:
-
-* walls
-* cylinders (pillars)
-* boxes
-
-This is required so the robot has obstacles to avoid.
+> ⚠️ **Important:** After making any changes to the YAML parameters, you must rebuild the package (Step 2) and restart the launch file (Step 4) for the new configurations to take effect.
